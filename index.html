@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>灯湖のつりびと — Lumina Mere</title>
+<meta name="description" content="HD-2D風の幻想的な湖で魚を釣り、図鑑を埋め、湖の主に会いに行くブラウザ釣りゲーム。">
+<link rel="stylesheet" href="assets/fonts/dotgothic16/dotgothic16.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="stage">
+  <canvas id="view"></canvas>
+
+  <!-- title -->
+  <div id="title" class="screen">
+    <div class="title-inner">
+      <div class="logo-en">LUMINA&nbsp;MERE</div>
+      <div class="logo-rule"><span></span><i></i><span></span></div>
+      <h1 class="logo-jp">灯湖のつりびと</h1>
+      <p class="logo-sub">星が還る湖で、湖の主に会いに行く</p>
+      <div class="title-menu">
+        <button class="tbtn" id="btn-new">はじめから</button>
+        <button class="tbtn" id="btn-continue">つづきから</button>
+      </div>
+      <p class="press">クリック / スペースキー で決定</p>
+    </div>
+    <div class="title-foot">A small fishing tale · Original art &amp; music generated in code</div>
+  </div>
+
+  <!-- in-game HUD -->
+  <div id="hud" class="hidden">
+    <div class="hud-tl">
+      <div class="panel clock">
+        <div class="dial" id="dial"><div class="dial-hand" id="dial-hand"></div></div>
+        <div class="clock-text">
+          <div class="clock-time" id="clock-time">14:00</div>
+          <div class="clock-sub"><span id="clock-period">昼</span>・<span id="clock-weather">晴れ</span></div>
+        </div>
+      </div>
+      <div class="panel goal">
+        <div class="goal-row"><span class="lumen-ico"></span><span id="lumen">0</span><span class="unit">ルーメン</span></div>
+        <div class="goal-row small"><span>図鑑</span><span id="dex-count">0/12</span></div>
+        <div class="goal-bar"><div id="goal-fill"></div></div>
+        <div class="goal-note" id="goal-note">9種を記録すると、湖の主の噂が…</div>
+      </div>
+    </div>
+    <div class="hud-tr">
+      <button class="hbtn" id="hb-dex" title="図鑑 (J)"><span class="ico ico-book"></span><span>図鑑</span><kbd>J</kbd></button>
+      <button class="hbtn" id="hb-shop" title="工房 (U)"><span class="ico ico-anvil"></span><span>工房</span><kbd>U</kbd></button>
+      <button class="hbtn" id="hb-rest" title="休む (R)"><span class="ico ico-moon"></span><span>休む</span><kbd>R</kbd></button>
+      <button class="hbtn small" id="hb-sound" title="音 (M)"><span class="ico ico-note"></span></button>
+    </div>
+    <div id="hint" class="hint"></div>
+    <div id="toasts"></div>
+    <div id="power" class="power hidden"><div class="power-fill" id="power-fill"></div><div class="power-zones"><i></i><i></i></div><div class="power-label">遠投</div></div>
+    <div id="fight" class="fight hidden">
+      <div class="fight-name" id="fight-name">？？？</div>
+      <div class="tension">
+        <svg viewBox="0 0 100 100" class="tension-svg">
+          <circle cx="50" cy="50" r="40" class="t-bg"/>
+          <circle cx="50" cy="50" r="40" class="t-danger"/>
+          <circle cx="50" cy="50" r="40" class="t-val" id="t-val"/>
+        </svg>
+        <div class="tension-label" id="t-label">テンション</div>
+        <div class="tension-num" id="t-num">0</div>
+      </div>
+      <div class="dist">
+        <div class="dist-label"><span>距離</span><span id="d-num">0m</span></div>
+        <div class="dist-bar"><div class="dist-fill" id="d-fill"></div><div class="dist-fish" id="d-fish"></div></div>
+      </div>
+      <div class="fight-help">押して巻く ／ 離して休む</div>
+    </div>
+    <div id="popups"></div>
+  </div>
+
+  <div id="banner" class="banner"><div class="b-rule"></div><div class="b-title" id="b-title"></div><div class="b-sub" id="b-sub"></div><div class="b-rule"></div></div>
+
+  <!-- modal layers -->
+  <div id="catch" class="modal hidden">
+    <div class="card">
+      <div class="card-badges" id="card-badges"></div>
+      <div class="card-art"><div class="card-halo"></div><img id="card-img" alt=""></div>
+      <div class="card-name" id="card-name"></div>
+      <div class="card-en" id="card-en"></div>
+      <div class="card-stars" id="card-stars"></div>
+      <div class="card-stats">
+        <div><span>大きさ</span><b id="card-size"></b></div>
+        <div><span>報酬</span><b id="card-reward"></b></div>
+      </div>
+      <p class="card-desc" id="card-desc"></p>
+      <div class="card-next">クリック / スペース で続ける</div>
+    </div>
+  </div>
+
+  <div id="dex" class="modal hidden">
+    <div class="sheet">
+      <div class="sheet-head"><h2>灯湖魚類図鑑</h2><span class="sheet-sub" id="dex-sub"></span><button class="close" data-close>×</button></div>
+      <div class="dex-body">
+        <div class="dex-grid" id="dex-grid"></div>
+        <div class="dex-detail" id="dex-detail"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="shop" class="modal hidden">
+    <div class="sheet narrow">
+      <div class="sheet-head"><h2>灯守りの工房</h2><span class="sheet-sub">ルーメンで道具を鍛えよう</span><button class="close" data-close>×</button></div>
+      <div class="shop-wallet"><span class="lumen-ico"></span><span id="shop-lumen">0</span> ルーメン</div>
+      <div class="shop-list" id="shop-list"></div>
+    </div>
+  </div>
+
+  <div id="ending" class="modal hidden">
+    <div class="ending-inner">
+      <div class="logo-rule"><span></span><i></i><span></span></div>
+      <h2 class="end-title">湖の主と、星の灯</h2>
+      <p class="end-text">ルミナリアの鱗がひときわ強く輝くと、<br>尖塔の水晶に光が還り、湖じゅうに灯がともった。<br>見習いのつりびとは、今日、灯守りになった。</p>
+      <div class="end-stats" id="end-stats"></div>
+      <div class="logo-rule"><span></span><i></i><span></span></div>
+      <button class="tbtn" id="btn-free">湖に戻る（フリープレイ）</button>
+    </div>
+  </div>
+
+  <div id="rotate" class="rotate-note">横向きにすると、より快適に遊べます</div>
+</div>
+
+<script src="js/core.js"></script>
+<script src="js/env.js"></script>
+<script src="js/pixel.js"></script>
+<script src="js/data.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/post.js"></script>
+<script src="js/world.js"></script>
+<script src="js/fishing.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
