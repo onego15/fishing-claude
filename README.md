@@ -5,6 +5,8 @@
 
 ![実際のゲームプレイ（自動操縦ボットによる録画）](docs/demo.gif)
 
+▶ **ブラウザで遊ぶ: https://onego15.github.io/fishing-claude/** （GitHub Pages）
+
 ▶ 長めのプレイ動画（MP4・約120秒）: [docs/gameplay.mp4](docs/gameplay.mp4)
 
 > GIF / MP4 はどちらも、このリポジトリのゲームをヘッドレス Chromium で実際に動かして撮影したものです（詳細は「動作確認結果」を参照）。
